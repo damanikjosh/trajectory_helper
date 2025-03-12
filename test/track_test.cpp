@@ -80,13 +80,13 @@ TEST(Track2Test, VectorAccessors) {
     EXPECT_EQ(kappa_vals[0], 6.0);
     EXPECT_EQ(kappa_vals[1], 7.0);
     
-    auto wr_vals = track.wr();
-    EXPECT_EQ(wr_vals[0], 4.0);
-    EXPECT_EQ(wr_vals[1], 5.0);
-    
     auto wl_vals = track.wl();
-    EXPECT_EQ(wl_vals[0], 5.0);
-    EXPECT_EQ(wl_vals[1], 6.0);
+    EXPECT_EQ(wl_vals[0], 4.0);
+    EXPECT_EQ(wl_vals[1], 5.0);
+    
+    auto wr_vals = track.wr();
+    EXPECT_EQ(wr_vals[0], 5.0);
+    EXPECT_EQ(wr_vals[1], 6.0);
 }
 
 TEST(Track2Test, SetWidths) {

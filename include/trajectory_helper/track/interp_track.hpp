@@ -21,7 +21,7 @@ namespace th {
  * @return          Interpolated track (unclosed)
  */
 template<typename T>
-Track2<T> interp_track(const Track2<T>& track, T stepsize, bool is_closed = true) {
+Track2<T> interp_track(const Track2<T>& track, double stepsize) {
     if (track.size() < 2) {
         throw std::runtime_error("Track must have at least 2 points!");
     }

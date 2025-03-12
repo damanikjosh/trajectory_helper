@@ -6,15 +6,15 @@
 namespace th {
 template<typename T>
 struct TrackPoint2 {
-    T s, x, y, psi, wr, wl, kappa;
+    T s, x, y, psi, wl, wr, kappa;
 
-    TrackPoint2() : s(std::numeric_limits<T>::infinity()), x(std::numeric_limits<T>::infinity()), y(std::numeric_limits<T>::infinity()), psi(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
-    TrackPoint2(T x, T y) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
-    TrackPoint2(T x, T y, T psi) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wr(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
-    TrackPoint2(T x, T y, T wr, T wl) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(std::numeric_limits<T>::infinity()), wr(wr), wl(wl), kappa(std::numeric_limits<T>::infinity()) {}
-    TrackPoint2(T x, T y, T psi, T wr, T wl) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wr(wr), wl(wl), kappa(std::numeric_limits<T>::infinity()) {}
-    TrackPoint2(T x, T y, T psi, T wr, T wl, T kappa) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wr(wr), wl(wl), kappa(kappa) {}
-    TrackPoint2(T s, T x, T y, T psi, T wr, T wl, T kappa) : s(s), x(x), y(y), psi(psi), wr(wr), wl(wl), kappa(kappa) {}
+    TrackPoint2() : s(std::numeric_limits<T>::infinity()), x(std::numeric_limits<T>::infinity()), y(std::numeric_limits<T>::infinity()), psi(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
+    TrackPoint2(T x, T y) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
+    TrackPoint2(T x, T y, T psi) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wl(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
+    TrackPoint2(T x, T y, T wl, T wr) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(std::numeric_limits<T>::infinity()), wl(wl), wr(wr), kappa(std::numeric_limits<T>::infinity()) {}
+    TrackPoint2(T x, T y, T psi, T wl, T wr) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wl(wl), wr(wr), kappa(std::numeric_limits<T>::infinity()) {}
+    TrackPoint2(T x, T y, T psi, T wl, T wr, T kappa) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wl(wl), wr(wr), kappa(kappa) {}
+    TrackPoint2(T s, T x, T y, T psi, T wl, T wr, T kappa) : s(s), x(x), y(y), psi(psi), wl(wl), wr(wr), kappa(kappa) {}
 
     Point2<T> to_point() const { return Point2<T>(x, y); }
     Point2<T> to_point() { return Point2<T>(x, y); }

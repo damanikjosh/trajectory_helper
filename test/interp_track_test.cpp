@@ -8,7 +8,7 @@ TEST(InterpTrackTest, BasicInterpolationUnclosed) {
 
     
     // Interpolate to 0.5m step size
-    auto interp_track = th::interp_track(track, 0.5, false);
+    auto interp_track = th::interp_track(track, 0.5);
     EXPECT_EQ(interp_track.size(), 7);  // Should have 6 points
     
     // Check interpolated points
@@ -40,7 +40,7 @@ TEST(InterpTrackTest, BasicInterpolationClosed) {
 
     
     // Interpolate to 0.5m step size
-    auto interp_track = th::interp_track(track, 0.5, true);
+    auto interp_track = th::interp_track(track, 0.5);
     EXPECT_EQ(interp_track.size(), 8);  // Should have 8 points
     
     // Check interpolated points

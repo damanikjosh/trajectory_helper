@@ -39,8 +39,8 @@ TEST(TrackPoint2Test, XYWidthsConstructor) {
     th::TrackPoint2<double> p(1.0, 2.0, 3.0, 4.0);
     EXPECT_EQ(p.x, 1.0);
     EXPECT_EQ(p.y, 2.0);
-    EXPECT_EQ(p.wr, 3.0);
-    EXPECT_EQ(p.wl, 4.0);
+    EXPECT_EQ(p.wl, 3.0);
+    EXPECT_EQ(p.wr, 4.0);
     EXPECT_TRUE(std::isinf(p.s));
     EXPECT_TRUE(std::isinf(p.psi));
     EXPECT_TRUE(std::isinf(p.kappa));
@@ -52,8 +52,8 @@ TEST(TrackPoint2Test, FullConstructor) {
     EXPECT_EQ(p.x, 2.0);
     EXPECT_EQ(p.y, 3.0);
     EXPECT_EQ(p.psi, 4.0);
-    EXPECT_EQ(p.wr, 5.0);
-    EXPECT_EQ(p.wl, 6.0);
+    EXPECT_EQ(p.wl, 5.0);
+    EXPECT_EQ(p.wr, 6.0);
     EXPECT_EQ(p.kappa, 7.0);
 }
 
