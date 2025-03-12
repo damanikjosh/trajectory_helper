@@ -1,11 +1,13 @@
-#ifndef TRAJECTORY_HELPER__CALC__TRACK_HPP
-#define TRAJECTORY_HELPER__CALC__TRACK_HPP
+#ifndef TRAJECTORY_HELPER__TRACK__CALC__TRACK_HPP
+#define TRAJECTORY_HELPER__TRACK__CALC__TRACK_HPP
 
 #include <vector>
 #include <cmath>
 #include <numeric>
-#include "trajectory_helper/types.hpp"
 #include "trajectory_helper/utils.hpp"
+#include "trajectory_helper/point/point.hpp"
+#include "trajectory_helper/track/track.hpp"
+#include "trajectory_helper/track/track_point.hpp"
 
 namespace th {
 
@@ -36,8 +38,9 @@ std::vector<double> calc_el_lengths(const Track2f& track) {
  * @param calc_curv Whether to calculate curvature
  * @return Updated track with calculated heading and curvature
  */
-Track2f calc_track(
-    const Track2f& track,
+template<typename T>
+Track2<T> calc_track(
+    const std::vector<Point2<T>>& points,
     bool is_closed,
     double stepsize_psi_preview = 1.0,
     double stepsize_psi_review = 1.0,
@@ -45,12 +48,26 @@ Track2f calc_track(
     double stepsize_curv_review = 2.0,
     bool calc_curv = true)
 {
-    Track2f result = track;
-    auto el_lengths = calc_el_lengths(track);
+    Track2<T> result;
+    result.reserve(points.size());
+    
+    // Convert points to track points
+    for (const auto& p : points) {
+        result.push_back(TrackPoint2<T>(p.x, p.y));
+    }
+    
+    std::vector<double> el_lengths;
+    el_lengths.reserve(points.size() - 1);
+    
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+        double dx = points[i+1].x - points[i].x;
+        double dy = points[i+1].y - points[i].y;
+        el_lengths.push_back(std::sqrt(dx*dx + dy*dy));
+    }
     
     // Calculate cumulative path length (s coordinate)
     result[0].s = 0.0;  // Initialize first point
-    for (size_t i = 1; i < track.size(); ++i) {
+    for (size_t i = 1; i < points.size(); ++i) {
         result[i].s = result[i-1].s + el_lengths[i-1];
     }
     
@@ -64,26 +81,26 @@ Track2f calc_track(
 
     if (is_closed) {
         // Calculate heading (psi)
-        for (size_t i = 0; i < track.size(); ++i) {
-            int preview_idx = (i + ind_step_preview_psi) % track.size();
-            int review_idx = (i - ind_step_review_psi + track.size()) % track.size();
+        for (size_t i = 0; i < points.size(); ++i) {
+            int preview_idx = (i + ind_step_preview_psi) % points.size();
+            int review_idx = (i - ind_step_review_psi + points.size()) % points.size();
             
-            double dx = track[preview_idx].x - track[review_idx].x;
-            double dy = track[preview_idx].y - track[review_idx].y;
+            double dx = points[preview_idx].x - points[review_idx].x;
+            double dy = points[preview_idx].y - points[review_idx].y;
             result[i].psi = normalize_psi(std::atan2(dy, dx));
         }
 
         // Calculate curvature (kappa)
         if (calc_curv) {
-            for (size_t i = 0; i < track.size(); ++i) {
-                size_t preview_idx = (i + ind_step_preview_curv) % track.size();
-                size_t review_idx = (i - ind_step_review_curv + track.size()) % track.size();
+            for (size_t i = 0; i < points.size(); ++i) {
+                size_t preview_idx = (i + ind_step_preview_curv) % points.size();
+                size_t review_idx = (i - ind_step_review_curv + points.size()) % points.size();
                 
                 double delta_psi = normalize_psi(result[preview_idx].psi - result[review_idx].psi);
                 
                 // Calculate path length between review and preview points
                 double path_length = 0.0;
-                for (size_t j = review_idx; j != preview_idx; j = (j + 1) % track.size()) {
+                for (size_t j = review_idx; j != preview_idx; j = (j + 1) % points.size()) {
                     path_length += el_lengths[j];
                 }
                 
@@ -92,31 +109,31 @@ Track2f calc_track(
         }
     } else {
         // Calculate heading for open path
-        for (size_t i = 0; i < track.size(); ++i) {
+        for (size_t i = 0; i < points.size(); ++i) {
             double dx, dy;
             if (i == 0) {
-                dx = track[1].x - track[0].x;
-                dy = track[1].y - track[0].y;
-            } else if (i == track.size() - 1) {
-                dx = track[i].x - track[i-1].x;
-                dy = track[i].y - track[i-1].y;
+                dx = points[1].x - points[0].x;
+                dy = points[1].y - points[0].y;
+            } else if (i == points.size() - 1) {
+                dx = points[i].x - points[i-1].x;
+                dy = points[i].y - points[i-1].y;
             } else {
-                dx = track[i+1].x - track[i-1].x;
-                dy = track[i+1].y - track[i-1].y;
+                dx = points[i+1].x - points[i-1].x;
+                dy = points[i+1].y - points[i-1].y;
             }
             result[i].psi = normalize_psi(std::atan2(dy, dx));
         }
 
         // Calculate curvature for open path
         if (calc_curv) {
-            for (size_t i = 0; i < track.size(); ++i) {
+            for (size_t i = 0; i < points.size(); ++i) {
                 double delta_psi;
                 double path_length;
                 
                 if (i == 0) {
                     delta_psi = normalize_psi(result[1].psi - result[0].psi);
                     path_length = el_lengths[0];
-                } else if (i == track.size() - 1) {
+                } else if (i == points.size() - 1) {
                     delta_psi = normalize_psi(result[i].psi - result[i-1].psi);
                     path_length = el_lengths[i-1];
                 } else {
@@ -134,4 +151,4 @@ Track2f calc_track(
 
 }  // namespace th
 
-#endif  // TRAJECTORY_HELPER__CALC__TRACK_HPP
+#endif  // TRAJECTORY_HELPER__TRACK__CALC__TRACK_HPP

@@ -4,7 +4,9 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include "trajectory_helper/types.hpp"
+#include "trajectory_helper/point/point.hpp"
+#include "trajectory_helper/track/track.hpp"
+#include "trajectory_helper/track/track_point.hpp"
 
 namespace th {
 

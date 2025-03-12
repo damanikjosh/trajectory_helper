@@ -12,30 +12,24 @@ namespace th {
 
 /**
  * Smooth a track using spline approximation.
- * 
- * @param track            Track to smooth (unclosed)
- * @param k_reg           Order of B splines
- * @param s_reg          Smoothing factor (usually between 5 and 100)
- * @param stepsize_prep  Stepsize used for linear track interpolation before spline approximation
- * @param stepsize_reg   Stepsize after smoothing
- * @param debug          Flag for printing debug messages
- * @return              Smoothed track (unclosed)
+ * Template type T is automatically deduced from input track type.
  */
-Track2f smooth_track(const Track2f& track,
+template<typename T>
+Track2<T> smooth_track(const Track2<T>& track,
                     int k_reg = 3,
-                    double s_reg = 10.0,
-                    double stepsize_prep = 1.0,
-                    double stepsize_reg = 3.0,
+                    typename Track2<T>::value_type s_reg = 10.0,
+                    typename Track2<T>::value_type stepsize_prep = 1.0,
+                    typename Track2<T>::value_type stepsize_reg = 3.0,
                     bool debug = false) {
     
     // Linear interpolation before smoothing
-    Track2f track_interp = interp_track(track, stepsize_prep);
+    Track2<T> track_interp = interp_track(track, stepsize_prep);
     
     // Create closed track by adding first point at end
-    Track2f track_cl = track_interp;
+    Track2<T> track_cl = track_interp;
     // track_cl.push_back(track_interp.front());
 
-    Track2f extended_track_cl;
+    Track2<T> extended_track_cl;
     size_t half_size = track_cl.size() / 2;
 
     // Extend track from half size to end
@@ -54,12 +48,12 @@ Track2f smooth_track(const Track2f& track,
     }
 
     // Calculate cumulative distances
-    std::vector<double> dists_cum = calculate_cumulative_distances(track_cl);
-    std::vector<double> extended_dists_cum = calculate_cumulative_distances(extended_track_cl);
-    double extended_total_length = extended_dists_cum.back();
+    std::vector<T> dists_cum = calculate_cumulative_distances(track_cl);
+    std::vector<T> extended_dists_cum = calculate_cumulative_distances(extended_track_cl);
+    T extended_total_length = extended_dists_cum.back();
 
     // Prepare data for B-spline interpolation
-    std::vector<double> x_coords, y_coords;
+    std::vector<T> x_coords, y_coords;
     x_coords.reserve(extended_track_cl.size());
     y_coords.reserve(extended_track_cl.size());
     
@@ -70,25 +64,25 @@ Track2f smooth_track(const Track2f& track,
 
     // Create cubic B-splines for x and y coordinates
     // Use parameter space [0, 1] for interpolation
-    double t0 = 0.0;
-    double h = 1.0 / (extended_track_cl.size() - 1);
+    T t0 = T(0.0);
+    T h = T(1.0) / (extended_track_cl.size() - 1);
     
-    boost::math::interpolators::cardinal_cubic_b_spline<double> spline_x(
+    boost::math::interpolators::cardinal_cubic_b_spline<T> spline_x(
         x_coords.data(), x_coords.size(), t0, h);
-    boost::math::interpolators::cardinal_cubic_b_spline<double> spline_y(
+    boost::math::interpolators::cardinal_cubic_b_spline<T> spline_y(
         y_coords.data(), y_coords.size(), t0, h);
 
     // Create smoothed track with regular spacing
-    Track2f smoothed_track;
+    Track2<T> smoothed_track;
     size_t extended_num_points = static_cast<size_t>(std::ceil(extended_total_length / stepsize_reg));
 
     size_t start_idx = extended_num_points / 4;
     size_t end_idx = 3 * extended_num_points / 4 + (stepsize_prep / stepsize_reg) / 2 - 1;
 
     for (size_t i = start_idx; i < end_idx; ++i) {
-        double t = static_cast<double>(i) / extended_num_points;
+        T t = static_cast<T>(i) / extended_num_points;
         
-        TrackPoint2f point;
+        TrackPoint2<T> point;
         // Evaluate splines at parameter t
         point.x = spline_x(t);
         point.y = spline_y(t);
@@ -97,16 +91,16 @@ Track2f smooth_track(const Track2f& track,
         if (track.has_widths()) {
             // Find closest original track segment for width interpolation
             size_t idx = find_nearest_idx(extended_track_cl, point.to_point());
-            double segment_t = 0.0;
+            T segment_t = T(0.0);
             
             if (idx < extended_track_cl.size() - 1) {
-                Point2f v1 = extended_track_cl[idx].to_point();
-                Point2f v2 = extended_track_cl[idx + 1].to_point();
-                Point2f v = point.to_point() - v1;
-                Point2f dir = v2 - v1;
-                double len_sq = dir.dot(dir);
+                Point2<T> v1 = extended_track_cl[idx].to_point();
+                Point2<T> v2 = extended_track_cl[idx + 1].to_point();
+                Point2<T> v = point.to_point() - v1;
+                Point2<T> dir = v2 - v1;
+                T len_sq = dir.dot(dir);
                 if (len_sq > 0) {
-                    segment_t = std::clamp(v.dot(dir) / len_sq, 0.0, 1.0);
+                    segment_t = std::clamp(v.dot(dir) / len_sq, T(0.0), T(1.0));
                 }
             }
 
@@ -120,15 +114,15 @@ Track2f smooth_track(const Track2f& track,
 
     if (debug) {
         // Calculate mean deviation between original and smoothed track
-        double total_deviation = 0.0;
-        double max_deviation = 0.0;
+        T total_deviation = T(0.0);
+        T max_deviation = T(0.0);
         for (const auto& p : track) {
             size_t nearest_idx = find_nearest_idx(smoothed_track, p.to_point());
-            double dev = distance(p, smoothed_track[nearest_idx]);
+            T dev = distance(p, smoothed_track[nearest_idx]);
             total_deviation += dev;
             max_deviation = std::max(max_deviation, dev);
         }
-        double mean_deviation = total_deviation / track.size();
+        T mean_deviation = total_deviation / track.size();
         
         // Print debug information
         std::cout << "Spline approximation: mean deviation " << mean_deviation 
@@ -137,6 +131,11 @@ Track2f smooth_track(const Track2f& track,
 
     return smoothed_track;
 }
+
+// Remove the typedefs as they're no longer needed
+// The function can be called directly with any Track2 type:
+// auto smoothed = smooth_track(track2f);  // for Track2f
+// auto smoothed = smooth_track(track2d);  // for Track2d
 
 }  // namespace th
 

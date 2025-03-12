@@ -1,14 +1,17 @@
 #ifndef TRAJECTORY_HELPER__PROJECT_POINT_HPP
 #define TRAJECTORY_HELPER__PROJECT_POINT_HPP
 
-#include "trajectory_helper/types.hpp"
+#include "trajectory_helper/point/point.hpp"
+#include "trajectory_helper/track/track.hpp"
+#include "trajectory_helper/track/track_point.hpp"
+
 #include "trajectory_helper/utils.hpp"
-#include "trajectory_helper/interp_point.hpp"
 
 namespace th {
 
-TrackPoint2f project_point(const Track2f& track, const Point2f& point) {
-    if (track.size() < 2) return track.empty() ? TrackPoint2f() : track.front();
+template<typename T>
+TrackPoint2<T> project_point(const Track2<T>& track, const Point2<T>& point) {
+    if (track.size() < 2) return track.empty() ? TrackPoint2<T>() : track.front();
     
     size_t nearest_idx = find_nearest_idx(track, point);
 
@@ -21,38 +24,37 @@ TrackPoint2f project_point(const Track2f& track, const Point2f& point) {
     }
     check_segments.push_back(nearest_idx);
 
-    double min_dist = std::numeric_limits<double>::max();
-    TrackPoint2f nearest_point;
+    T min_dist = std::numeric_limits<T>::max();
+    TrackPoint2<T> nearest_point;
 
     for (size_t idx : check_segments) {
         const auto& p1 = track[idx];
         const auto& p2 = track[(idx + 1) % track.size()];
         
-        double dx = p2.x - p1.x;
-        double dy = p2.y - p1.y;
-        double segment_length_sq = dx * dx + dy * dy;
+        T dx = p2.x - p1.x;
+        T dy = p2.y - p1.y;
+        T segment_length_sq = dx * dx + dy * dy;
         
-        if (segment_length_sq == 0) continue;
+        if (segment_length_sq == T(0)) continue;
         
-        double t = ((point.x - p1.x) * dx + (point.y - p1.y) * dy) / segment_length_sq;
-        t = std::max(0.0, std::min(1.0, t));
+        T t = ((point.x - p1.x) * dx + (point.y - p1.y) * dy) / segment_length_sq;
+        t = std::max(T(0), std::min(T(1), t));
 
-        Track2f segment = {p1, p2};
+        Track2<T> segment = {p1, p2};
         // Handle s overflows
         if (p2.s < p1.s) {
             segment[1].s += track.back().s;
         }
-        
-        std::vector<double> seg_dists = {0, std::sqrt(segment_length_sq)};
-        
-        TrackPoint2f interp = interp_point(segment, seg_dists, t * seg_dists[1]);
+
+        T interp_s = p1.s + t * (segment[1].s - p1.s);
+        TrackPoint2<T> interp = interp_track_point(segment, interp_s);
 
         // Handle s overflows
         if (interp.s > track.back().s) {
-            interp.s += track.back().s;
+            interp.s -= track.back().s;
         }
         
-        double dist = std::hypot(interp.x - point.x, interp.y - point.y);
+        T dist = std::hypot(interp.x - point.x, interp.y - point.y);
         if (dist < min_dist) {
             min_dist = dist;
             nearest_point = interp;
