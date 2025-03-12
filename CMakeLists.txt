@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 # Set the project name
-project(my_library VERSION 1.0.0 LANGUAGES CXX)
+project(trajectory_helper VERSION 1.0.0 LANGUAGES CXX)
 
 # Define the interface library
 add_library(${PROJECT_NAME} INTERFACE)
