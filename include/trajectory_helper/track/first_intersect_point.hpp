@@ -7,8 +7,7 @@
 #include "trajectory_helper/point/point.hpp"
 #include "trajectory_helper/track/track.hpp"
 #include "trajectory_helper/track/track_point.hpp"
-
-#include "trajectory_helper/utils.hpp"
+#include "trajectory_helper/track/interp_track_point.hpp"
 
 namespace th {
 

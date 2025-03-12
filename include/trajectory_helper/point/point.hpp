@@ -1,6 +1,8 @@
 #ifndef TRAJECTORY_HELPER__POINT__POINT_HPP
 #define TRAJECTORY_HELPER__POINT__POINT_HPP
 
+#include <cmath>
+
 namespace th {
 
 template<typename T>

@@ -8,8 +8,8 @@
 #include "trajectory_helper/point/point.hpp"
 #include "trajectory_helper/track/track.hpp"
 #include "trajectory_helper/track/track_point.hpp"
+#include "trajectory_helper/track/interp_track_point.hpp"
 #include "trajectory_helper/utils.hpp"
-#include "trajectory_helper/interp_track_point.hpp"
 
 namespace th {
 
@@ -21,14 +21,21 @@ namespace th {
  * @return          Interpolated track (unclosed)
  */
 template<typename T>
-Track2<T> interp_track(const Track2<T>& track, T stepsize) {
+Track2<T> interp_track(const Track2<T>& track, T stepsize, bool is_closed = true) {
     if (track.size() < 2) {
         throw std::runtime_error("Track must have at least 2 points!");
     }
 
+    // Throw error if stepsize is zero
+    if (stepsize == T(0)) {
+        throw std::runtime_error("Stepsize must be greater than zero.");
+    }
+
     // Create closed track by adding first point at end
     Track2<T> track_cl = track;
-    track_cl.push_back(track[0]);
+    if (track.closed) {
+        track_cl.push_back(track[0]);
+    }
 
     // Calculate cumulative distances and set s coordinates
     T cum_dist = T(0);
@@ -42,7 +49,12 @@ Track2<T> interp_track(const Track2<T>& track, T stepsize) {
     // Calculate number of interpolation points
     size_t no_points_interp_cl = static_cast<size_t>(std::ceil(cum_dist / stepsize)) + 1;
     Track2<T> track_interp;
-    track_interp.resize(no_points_interp_cl - 1);  // Remove last point to keep unclosed
+
+    if (track.closed) {
+        track_interp.resize(no_points_interp_cl - 1);  // Remove last point to keep unclosed
+    } else {
+        track_interp.resize(no_points_interp_cl);
+    }
 
     // Interpolate all track points
     for (size_t i = 0; i < track_interp.size(); ++i) {

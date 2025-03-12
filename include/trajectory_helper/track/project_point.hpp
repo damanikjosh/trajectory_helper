@@ -4,30 +4,37 @@
 #include "trajectory_helper/point/point.hpp"
 #include "trajectory_helper/track/track.hpp"
 #include "trajectory_helper/track/track_point.hpp"
-
-#include "trajectory_helper/utils.hpp"
+#include "trajectory_helper/track/interp_track_point.hpp"
 
 namespace th {
+    
 
 template<typename T>
 TrackPoint2<T> project_point(const Track2<T>& track, const Point2<T>& point) {
-    if (track.size() < 2) return track.empty() ? TrackPoint2<T>() : track.front();
+    if (track.size() < 2) {
+        throw std::runtime_error("Track must have at least 2 points!");
+    }
     
     size_t nearest_idx = find_nearest_idx(track, point);
 
     // Check segments around nearest point
     std::vector<size_t> check_segments;
-    if (nearest_idx == 0) {
+    if (nearest_idx == 0 && !track.closed) {
         check_segments.push_back(track.size() - 1);
     } else {
         check_segments.push_back(nearest_idx - 1);
     }
     check_segments.push_back(nearest_idx);
 
+
     T min_dist = std::numeric_limits<T>::max();
     TrackPoint2<T> nearest_point;
 
     for (size_t idx : check_segments) {
+        if (track.closed && idx == track.size() - 1) {
+            continue;
+        }
+        
         const auto& p1 = track[idx];
         const auto& p2 = track[(idx + 1) % track.size()];
         

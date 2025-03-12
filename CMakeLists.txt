@@ -59,3 +59,31 @@ install(EXPORT ${PROJECT_NAME}Targets
 
 # Register the package in CMake’s package registry
 export(EXPORT ${PROJECT_NAME}Targets FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
+
+# Build options
+option(BUILD_TESTS "Build test programs" OFF)
+
+# Tests configuration
+if(BUILD_TESTS)
+    enable_testing()
+    find_package(GTest REQUIRED)
+    
+    # Find all test files in the test directory
+    file(GLOB TEST_SOURCES "test/*_test.cpp")
+    
+    # Create a test executable for each test file
+    foreach(TEST_SOURCE ${TEST_SOURCES})
+        # Extract the filename without extension
+        get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+        
+        # Create the test executable
+        add_executable(${TEST_NAME} ${TEST_SOURCE})
+        target_link_libraries(${TEST_NAME}
+            PRIVATE 
+                GTest::GTest 
+                GTest::Main
+                ${PROJECT_NAME}
+        )
+        add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    endforeach()
+endif()
