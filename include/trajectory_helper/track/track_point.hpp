@@ -16,12 +16,15 @@ struct TrackPoint2 {
     TrackPoint2(T x, T y, T psi, T wl, T wr, T kappa) : s(std::numeric_limits<T>::infinity()), x(x), y(y), psi(psi), wl(wl), wr(wr), kappa(kappa) {}
     TrackPoint2(T s, T x, T y, T psi, T wl, T wr, T kappa) : s(s), x(x), y(y), psi(psi), wl(wl), wr(wr), kappa(kappa) {}
 
+    TrackPoint2(const Point2<T>& point) : s(std::numeric_limits<T>::infinity()), x(point.x), y(point.y), psi(std::numeric_limits<T>::infinity()), wl(std::numeric_limits<T>::infinity()), wr(std::numeric_limits<T>::infinity()), kappa(std::numeric_limits<T>::infinity()) {}
+
     Point2<T> to_point() const { return Point2<T>(x, y); }
     Point2<T> to_point() { return Point2<T>(x, y); }
 
-    // bool has_psi() const { return psi != std::numeric_limits<T>::infinity(); }
-    // bool has_kappa() const { return kappa != std::numeric_limits<T>::infinity(); }
-    // bool has_widths() const { return wr != std::numeric_limits<T>::infinity() && wl != std::numeric_limits<T>::infinity(); }
+    bool has_s() const { return !std::isinf(s); }
+    bool has_psi() const { return !std::isinf(psi); }
+    bool has_kappa() const { return !std::isinf(kappa); }
+    bool has_widths() const { return !std::isinf(wr) && !std::isinf(wl); }
 };
 
 typedef TrackPoint2<int> TrackPoint2i;

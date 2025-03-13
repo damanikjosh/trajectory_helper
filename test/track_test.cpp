@@ -3,54 +3,48 @@
 #include <cmath>
 
 TEST(Track2Test, DefaultConstructor) {
-    th::Track2<double> track;
+    th::Track2d track;
     EXPECT_TRUE(track.empty());
 }
 
+
 TEST(Track2Test, ConstructorWithPointsUnclosed) {
-    std::vector<th::Point2<double>> points = {
-        th::Point2<double>(0.0, 0.0),
-        th::Point2<double>(1.0, 0.0),
-        th::Point2<double>(1.0, 1.0),
-        th::Point2<double>(0.0, 1.0)
+    std::vector<th::Point2d> points = {
+        th::Point2d(0.0, 0.0),
+        th::Point2d(1.0, 0.0),
+        th::Point2d(1.0, 1.0),
+        th::Point2d(0.0, 1.0)
     };
-    th::Track2<double> track(points, false);
+    th::Track2d track(points);
     
+    // Check that the points were added
     EXPECT_EQ(track.size(), 4);
+    EXPECT_EQ(track[3].x, 0.0);
+    EXPECT_EQ(track[3].y, 1.0);
     
-    // Check that psi values were calculated
-    auto psi_vals = track.psi();
-    EXPECT_EQ(psi_vals.size(), 4);
-    EXPECT_NEAR(psi_vals[0], 0.0, 1e-10);
-    EXPECT_NEAR(psi_vals[1], M_PI/4, 1e-10);
-    EXPECT_NEAR(psi_vals[2], 3*M_PI/4, 1e-10);
-    EXPECT_NEAR(psi_vals[3], M_PI, 1e-10);
-    
-    EXPECT_TRUE(track.has_psi());
-    EXPECT_TRUE(track.has_kappa());
+    // Expect that psi and kappa values are not calculated
+    EXPECT_FALSE(track.has_psi());
+    EXPECT_FALSE(track.has_kappa());
     EXPECT_FALSE(track.has_widths());
 }
 
-TEST(Track2Test, ConstructorWithPointsClosed) {
-    std::vector<th::Point2<double>> points = {
-        th::Point2<double>(0.0, 0.0),
-        th::Point2<double>(1.0, 0.0),
-        th::Point2<double>(1.0, 1.0),
-        th::Point2<double>(0.0, 1.0)
-    };    
-    th::Track2<double> track(points, true);
+TEST(Track2Test, ConstructorWithTrackPointsUnclosed) {
+    std::vector<th::TrackPoint2d> points = {
+        th::TrackPoint2d(0.0, 0.0),
+        th::TrackPoint2d(1.0, 0.0),
+        th::TrackPoint2d(1.0, 1.0),
+        th::TrackPoint2d(0.0, 1.0)
+    };
+    th::Track2d track(points);
+    
+    // Check that the points were added
     EXPECT_EQ(track.size(), 4);
+    EXPECT_EQ(track[3].x, 0.0);
+    EXPECT_EQ(track[3].y, 1.0);
     
-    // Check that psi values were calculated
-    auto psi_vals = track.psi();
-    EXPECT_EQ(psi_vals.size(), 4);
-    EXPECT_NEAR(psi_vals[0], -M_PI/4, 1e-10);
-    EXPECT_NEAR(psi_vals[1], M_PI/4, 1e-10);
-    EXPECT_NEAR(psi_vals[2], 3*M_PI/4, 1e-10);
-    EXPECT_NEAR(psi_vals[3], -3*M_PI/4, 1e-10);
-    
-    EXPECT_TRUE(track.has_psi());
-    EXPECT_TRUE(track.has_kappa());
+    // Expect that psi and kappa values are not calculated
+    EXPECT_FALSE(track.has_psi());
+    EXPECT_FALSE(track.has_kappa());
     EXPECT_FALSE(track.has_widths());
 }
 
@@ -90,8 +84,11 @@ TEST(Track2Test, VectorAccessors) {
 }
 
 TEST(Track2Test, SetWidths) {
-    std::vector<th::Point2<double>> points = {th::Point2<double>(0.0, 0.0), th::Point2<double>(0.0, 1.0)};
-    th::Track2<double> track(points, false);
+    std::vector<th::Point2d> points = {
+        th::Point2d(0.0, 0.0),
+        th::Point2d(0.0, 1.0)
+    };
+    th::Track2d track(points);
     
     std::vector<double> wl = {1.0, 2.0};
     std::vector<double> wr = {3.0, 4.0};
@@ -105,8 +102,8 @@ TEST(Track2Test, SetWidths) {
 }
 
 TEST(Track2Test, SetWidthsInvalidSize) {
-    th::Track2<double> track;
-    track.push_back(th::TrackPoint2<double>(0.0, 0.0));
+    th::Track2d track;
+    track.push_back(th::TrackPoint2d(0.0, 0.0));
     
     std::vector<double> wl = {1.0, 2.0};
     std::vector<double> wr = {3.0, 4.0};
@@ -115,10 +112,10 @@ TEST(Track2Test, SetWidthsInvalidSize) {
 }
 
 TEST(Track2Test, SinglePointError) {
-    std::vector<th::Point2<double>> points = {
-        th::Point2<double>(0.0, 0.0)
+    std::vector<th::Point2d> points = {
+        th::Point2d(0.0, 0.0)
     };
-    EXPECT_THROW(th::Track2<double> track(points, false);, std::runtime_error);
+    EXPECT_THROW(th::Track2d track(points), std::runtime_error);
 }
 
 
